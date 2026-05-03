@@ -3,8 +3,12 @@
   "description": "Multi-agent federation protocol for cross-organizational agent collaboration with identity verification",
   "version": "1.0.0",
   "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "test": "bun test",
+    "start": "bun run src/cli.ts",
     "build": "tsc"
   },
   "dependencies": {
