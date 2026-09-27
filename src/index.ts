@@ -195,7 +195,7 @@ export class IdentityManager {
       expiresAt: Date.now() + validityMs,
       previousAttestationHash: previousHash,
     };
-    attestation.signature = this.signData(agentId, attestation);
+    attestation.signature = this.signData(agentId, { ...attestation, signature: '' });
     previousAttestations.push(attestation);
     this.attestations.set(agentId, previousAttestations);
     return attestation;
@@ -211,7 +211,7 @@ export class IdentityManager {
       if (Date.now() > attestation.expiresAt) {
         return { valid: false, brokenAt: i };
       }
-      const expectedSignature = this.signData(agentId, attestation);
+      const expectedSignature = this.signData(agentId, { ...attestation, signature: '' });
       if (attestation.signature !== expectedSignature) {
         return { valid: false, brokenAt: i };
       }
@@ -250,6 +250,9 @@ export class FederationNodeManager {
 
   constructor(dataDir: string = './data') {
     this.dataDir = dataDir;
+    if (!existsSync(this.dataDir)) {
+      mkdirSync(this.dataDir, { recursive: true });
+    }
     this.loadNodes();
   }
 
@@ -361,6 +364,9 @@ export class TrustManager {
   constructor(dataDir: string = './data', auditLogPath: string = './audit.log') {
     this.dataDir = dataDir;
     this.auditLog = auditLogPath;
+    if (!existsSync(this.dataDir)) {
+      mkdirSync(this.dataDir, { recursive: true });
+    }
     this.loadTrustLevels();
   }
 
@@ -494,6 +500,9 @@ export class MessageRouter {
 
   constructor(dataDir: string = './data') {
     this.dataDir = dataDir;
+    if (!existsSync(this.dataDir)) {
+      mkdirSync(this.dataDir, { recursive: true });
+    }
     this.loadQueue();
   }
 

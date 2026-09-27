@@ -2,10 +2,11 @@ import { describe, test, expect, beforeEach } from "bun:test";
 import { IdentityManager, FederationNodeManager, TrustManager, MessageRouter } from "../src/index";
 
 describe("IdentityManager", () => {
-  const dataDir = `/tmp/federation-identity-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  let dataDir: string;
   let identityManager: IdentityManager;
 
   beforeEach(() => {
+    dataDir = `/tmp/federation-identity-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     identityManager = new IdentityManager(dataDir);
   });
 
@@ -98,10 +99,11 @@ describe("IdentityManager", () => {
 });
 
 describe("FederationNodeManager", () => {
-  const dataDir = `/tmp/federation-nodes-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  let dataDir: string;
   let nodeManager: FederationNodeManager;
 
   beforeEach(() => {
+    dataDir = `/tmp/federation-nodes-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     nodeManager = new FederationNodeManager(dataDir);
   });
 
@@ -165,11 +167,12 @@ describe("FederationNodeManager", () => {
 });
 
 describe("TrustManager", () => {
-  const dataDir = `/tmp/federation-trust-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  let dataDir: string;
   const auditLog = `/tmp/audit-${Date.now()}.log`;
   let trustManager: TrustManager;
 
   beforeEach(() => {
+    dataDir = `/tmp/federation-trust-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     trustManager = new TrustManager(dataDir, auditLog);
   });
 
@@ -310,10 +313,11 @@ describe("TrustManager", () => {
 });
 
 describe("MessageRouter", () => {
-  const dataDir = `/tmp/federation-router-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  let dataDir: string;
   let messageRouter: MessageRouter;
 
   beforeEach(() => {
+    dataDir = `/tmp/federation-router-${Date.now()}-${Math.random().toString(36).slice(2)}`;
     messageRouter = new MessageRouter(dataDir);
   });
 
@@ -341,9 +345,10 @@ describe("MessageRouter", () => {
     expect(received?.fromAgent).toBe("a2");
   });
 
-  test("moves expired messages to dead letter queue", () => {
+  test("moves expired messages to dead letter queue", async () => {
     const message = messageRouter.createMessage("task_request", "agent-001", { data: "test" }, { ttl: 1 });
     messageRouter.enqueueMessage(message, 5);
+    await new Promise((r) => setTimeout(r, 5));
     const received = messageRouter.dequeueMessage(10);
     expect(received).toBeUndefined();
     const dlq = messageRouter.getDeadLetterQueue();
@@ -362,9 +367,10 @@ describe("MessageRouter", () => {
     expect(remaining[0]).toBe("agent-002");
   });
 
-  test("reprocesses dead letter message", () => {
-    const message = messageRouter.createMessage("task_request", "agent-001", { data: "test" });
+  test("reprocesses dead letter message", async () => {
+    const message = messageRouter.createMessage("task_request", "agent-001", { data: "test" }, { ttl: 1 });
     messageRouter.enqueueMessage(message, 5);
+    await new Promise((r) => setTimeout(r, 5));
     messageRouter.dequeueMessage(10);
     const reprocessed = messageRouter.reprocessDeadLetter(message.id);
     expect(reprocessed).toBe(true);
